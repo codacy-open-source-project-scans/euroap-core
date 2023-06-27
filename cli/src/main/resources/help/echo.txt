@@ -1,0 +1,14 @@
+SYNOPSIS
+
+   echo [--help | line_of_text]
+
+DESCRIPTION
+
+   Displays a line of text passed in as an argument resolving variables and
+   expressions possibly contained in the text.
+
+ARGUMENTS
+
+   line_of_text  - line of text, possibly containing variables and expressions.
+
+   --help        - displays command description.

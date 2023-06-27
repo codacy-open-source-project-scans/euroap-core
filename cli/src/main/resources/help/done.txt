@@ -1,0 +1,18 @@
+SYNOPSIS
+
+    done [--discard]
+
+DESCRIPTION
+
+    Ends the 'for' block and executes the iteration.
+
+    For example, listing all the deployment:
+
+    for varName in :read-children-names(child-type=deployment)
+     echo Deployment $varName
+    done
+
+ARGUMENTS
+
+ --discard    - Optional. Ends the 'for' block and discard it.
+

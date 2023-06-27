@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<host xmlns="urn:jboss:domain:20.0">
+
+    <!--  An interface is always required by the parser -->
+    <management>
+        <management-interfaces>
+            <http-interface>
+                <http-upgrade enabled="true"/>
+                <socket interface="management" port="${jboss.management.http.port:9990}"/>
+            </http-interface>
+        </management-interfaces>
+    </management>
+
+    <interfaces>
+        <interface name="external">
+            <any-address/>
+        </interface>
+        <interface name="internal">
+            <multicast/>
+            <nic name="eth0"/>
+            <nic-match pattern="eth[0-9]+"/>
+            <point-to-point/>
+            <site-local-address/>
+            <up/>
+            <any>
+                <subnet-match value="10.0.0.0/8"/>
+                <subnet-match value="192.168.0.0/16"/>
+            </any>
+            <not>
+                <loopback/>
+            </not>
+        </interface>
+        <interface name="loopback">
+            <inet-address value="127.0.0.1"/>
+        </interface>
+    </interfaces>
+    
+    <servers>
+        <server name="server-one" group="main-server-group">
+		    <interfaces>
+		        <interface name="external">
+		            <any-address/>
+		        </interface>
+		        <interface name="internal">
+		            <multicast/>
+		            <nic name="eth0"/>
+		            <nic-match pattern="eth[0-9]+"/>
+		            <point-to-point/>
+		            <site-local-address/>
+		            <up/>
+		            <any>
+		                <subnet-match value="10.0.0.0/8"/>
+		                <subnet-match value="192.168.0.0/16"/>
+		            </any>
+		            <not>
+		                <loopback/>
+		            </not>
+		        </interface>
+                <interface name="loopback">
+                    <inet-address value="127.0.0.1"/>
+                </interface>
+		    </interfaces>        
+        </server>
+    </servers>
+    
+</host>        

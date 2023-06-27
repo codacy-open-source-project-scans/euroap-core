@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<host xmlns="urn:jboss:domain:20.0">
+
+    <!--  An interface is always required by the parser -->
+    <management>
+        <management-interfaces>
+            <http-interface>
+                <http-upgrade enabled="true"/>
+                <socket interface="management" port="${jboss.management.http.port:9990}"/>
+            </http-interface>
+        </management-interfaces>
+    </management>
+
+    <domain-controller>
+        <local/>
+        <!-- Alternative remote domain controller configuration with a host and port -->
+        <!-- <remote host="${jboss.domain.primary.address}" port="${jboss.domain.primary.port:9999}" security-realm="ManagementRealm"/> -->
+    </domain-controller>
+
+    <interfaces>
+        <interface name="management">
+            <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+        </interface>
+    </interfaces>
+
+</host>

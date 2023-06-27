@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<server xmlns="urn:jboss:domain:20.0">
+
+   <management>
+      <access-control provider="rbac">
+         <role-mapping>
+            <role name="Monitor">
+               <include>
+                  <user realm="ManagementRealm" name="UserOne" />
+                  <group realm="ApplicationRealm" name="GroupOne" />
+               </include>
+               <exclude>
+                  <user realm="ManagementRealm" name="UserTwo" />
+                  <group realm="ApplicationRealm" name="GroupTwo" />
+               </exclude>
+            </role>
+            <role name="Operator">
+               <include>
+                  <user name="UserThree" />
+                  <group name="GroupThree" />
+               </include>
+            </role>
+            <role name="Maintainer">
+               <exclude>
+                  <user name="UserFour" />
+                  <group name="GroupFour" />
+               </exclude>
+            </role>
+            <!-- TODO Elytron A Supercalifragilisticexpialidocious hack until we have in-vm permissions sorted. -->
+            <role name="SuperUser" >
+                <include>
+                    <user name="anonymous" />
+                </include>
+            </role>
+         </role-mapping>
+
+         <constraints>
+            <vault-expression-sensitivity requires-read="false"/>
+            <sensitive-classifications>
+               <sensitive-classification type="core" name="security-realm" requires-addressable="false" requires-read="false" requires-write="false" />
+            </sensitive-classifications>
+            <application-classifications>
+               <application-classification type="core" name="deployment" application="false" />
+            </application-classifications>
+         </constraints>
+      </access-control>
+   </management>
+</server>

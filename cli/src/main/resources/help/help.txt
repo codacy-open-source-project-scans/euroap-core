@@ -1,0 +1,165 @@
+Usage:
+
+  jboss-cli.sh/jboss-cli.bat [--help] [--version]
+                     [--bind=client_bind_address]
+                     [--controller=(controller_alias | [protocol://][host][:port])]
+                     [--connect] [--file=file_path]
+                     [--commands=command_or_operation(,command_or_operation)*]
+                     [--command=command_or_operation]
+                     [--user=username --password=password]
+                     [--properties=file_path]
+                     [--no-local-auth]
+                     [--error-on-interact]
+                     [--timeout=timeout]
+                     [--echo-command]
+                     [--command-timeout=timeout]
+                     [--no-operation-validation]
+                     [--output-json]
+                     [--no-color-output]
+                     [--no-output-paging]
+                     [--resolve-parameter-values]
+
+ --help (-h)     - prints (this) basic description of the command line utility.
+
+ --version       - prints the version info of the JBoss AS release, JVM and
+                   system environment.
+
+ --controller    - the default controller (including protocol, host and port)
+                   to connect to when the --connect option (described below) is
+                   specified or when the connect command is issued w/o
+                   the arguments.
+                   The default controller host is localhost and the port is 9990.
+                   For more details on specifying the target controller
+                   please execute 'help connect'.
+
+ --connect (-c)  - instructs the CLI to connect to the controller on start-up
+                   (to avoid issuing a separate connect command later).
+
+ --gui           - GUI built on top of the CLI, the only difference is that it
+                   brings up a GUI instead of a command line. In this mode, the
+                   CLI will automatically connect during start-up. You can
+                   optionally specify --controller, if necessary.
+
+ --file          - specifies a path to a file which contains commands and
+                   operations (one per line) that should be executed (in a
+                   non-interactive mode). The CLI will terminate the session
+                   immediately after the last command has been executed or if
+                   some command or operation failed.
+
+ --command       - specifies a single command or an operation that should be
+                   executed in the CLI session. The CLI will terminate the
+                   session immediately after the command or the operation has
+                   been executed. Note: --command argument is optional in a
+                   sense that any word (or phrase without whitespaces in it)
+                   will be assumed to be a command (or an operation).
+
+ --commands      - specifies a comma-separated list (the list must not contain
+                   whitespaces) of commands and operations that should be
+                   executed in the CLI session. The CLI session will be
+                   automatically terminated as soon as the last command or
+                   operation has been executed or after the first error. Note:
+                   --commands argument is optional in a sense that any
+                   comma-separated list at the end of the argument list will be
+                   assumed to be the list of commands and operations.
+
+ --error-on-interact  - disable prompts for security related input (username,
+                        password, acceptance of unrecognized certificates) in
+                   non-interactive mode. In case the argument is preset and an
+                   input is required to proceed, the CLI process will terminate
+                   abruptly with an error.
+
+ --user (-u)     - if the controller requires user authentication, this argument
+                   can be used to specify the user name as a command line
+                   argument. If the argument isn't specified and the
+                   authentication is required the user will be prompted to enter
+                   the user name when the connect command is issued.  Local
+                   authentication is automatically disabled if a user is specified.
+
+ --password (-p) - specifies the password for authentication while connecting to
+                   the controller as a command line argument. If the argument
+                   isn't specified and the authentication is required the user
+                   will be prompted to enter the password when the connect
+                   command is issued.
+
+ --properties    - specifies a path to a properties file which contains
+                   property value pairs to define system properties.
+                   The properties file uses a standard KEY=VALUE syntax.
+
+ --no-local-auth - disable the local authentication mechanism which allows the CLI
+                   to demonstrate that it is being executed locally to the server
+                   being managed through an exchange of tokens using the filesystem.
+
+ --timeout       - specifies the maximum amount of milliseconds the CLI will wait for a
+                   connection to succeed. Defaults to 5000 milliseconds when not provided.
+
+ --bind          - specifies to which address the CLI is going to be bound.
+                   If none is provided then the CLI will choose one automatically as needed.
+
+ --echo-command  - include the prompt with the command into the output
+                   for each command executed in non-interactive mode.
+
+ --command-timeout  - The maximum amount of seconds the CLI will wait for a
+                      command to complete.
+
+ --output-json      - causes the CLI to display operation responses using JSON syntax.
+                      By default responses are displayed using DMR string syntax.
+
+ --no-operation-validation  - disable the pre validation of the operations from the CLI.
+                              Operations will be only validated by the server.
+
+ --no-color-output  - disable CLI output and prompt colors.
+
+ --no-output-paging - disable output paging (the possibility to browse 
+                      and search in output of commands) and print the output of commands at once.
+
+ --resolve-parameter-values  - resolve system properties before sending 
+                               the operation requests to the controller.
+
+For a list of available commands, once the CLI is started, execute:
+
+  help --commands
+
+The resulting listing may depend on the current context. E.g. some of the
+commands require an established connection to the controller (standalone or
+domain). These commands won't appear in the listing unless the connection has
+been established. Other commands may depend on the availability of specific
+subsystems. E.g. if the messaging subsystem is not available, messaging-related
+commands will not be listed.
+
+Here are some of the most basic supported commands:
+
+ cn (or cd)             - change the current node path to the argument;
+ connect                - connect to the server or domain controller;
+ deployment             - application deployment related operations such as deploy/undeploy;
+ help (or h)            - print this message;
+ history                - print or disable/enable/clear the history expansion;
+ ls                     - list the contents of the node path;
+ pwn (or pwd)           - prints the current working node;
+ quit (or q)            - quit the command line interface;
+ version                - prints the version and environment information.
+
+For a more detailed description of a specific command, execute:
+
+  help <command name>
+
+Tab-completion is supported for the commands, just press the tab key to start.
+
+Operation requests start with './' or '/' and follow the format:
+
+[node-type=node-name (/node-type=node-name)*] : operation-name ['('[name=value [, name=value]*]')'] [{header (;header)*}]
+
+e.g. /subsystem=undertow/listener=http:read-attribute(name=enabled)
+
+If the operation request doesn't require a node path then the request can start
+with ':' followed by an operation name and the property list if necessary ('/:'
+and './:' are also possible).
+
+In operation Tab-completion, required properties have a name terminated by the '*' character.
+This helps identify which are the properties that must be set in order to
+construct a valid operation. Furthermore, Tab-completion does not propose properties
+that are alternatives of properties already present in the operation.
+
+Whitespaces between the separators are insignificant.
+If the operation doesn't require arguments then the brackets '()' are optional.
+Tab-completion for operation requests supports node types and names, operation
+names, property names and, in some cases, values.

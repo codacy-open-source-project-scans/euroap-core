@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<host xmlns="urn:jboss:domain:20.0">
+
+    <paths>
+       <path name="absolute" path="${test.exp:/}"/>
+       <path name="relative" path="${test.exp:test}" relative-to="path"/>
+    </paths>
+
+    <!--  An interface is always required by the parser -->
+    <management>
+        <management-interfaces>
+            <http-interface>
+                <http-upgrade enabled="true"/>
+                <socket interface="management" port="${jboss.management.http.port:9990}"/>
+            </http-interface>
+        </management-interfaces>
+    </management>
+
+
+    <servers>
+        <server name="server-one" group="main-server-group">
+            <paths>
+		         <path name="absolute" path="${test.exp:/}"/>
+		         <path name="relative" path="${test.exp:test}" relative-to="path"/>
+            </paths>
+        </server>
+    </servers>
+
+</host>

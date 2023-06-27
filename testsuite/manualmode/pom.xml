@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+~ JBoss, Home of Professional Open Source
+~ Copyright 2014, JBoss Inc., and individual contributors as indicated
+~ by the @authors tag.
+~
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~
+~ http://www.apache.org/licenses/LICENSE-2.0
+~
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.core</groupId>
+        <artifactId>wildfly-core-testsuite</artifactId>
+        <version>21.1.0.Beta2-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>wildfly-core-testsuite-manualmode</artifactId>
+
+    <name>WildFly Core Test Suite: Manual Mode Tests</name>
+
+    <properties>
+        <wildfly.home>${project.basedir}/target/wildfly-core</wildfly.home>
+
+        <!--
+			Byteman configuration properties to add to the jvm.args system property passed to surefire if byteman is needed.
+			Default is none because only the disabled-by-default DeploymentScannerShutdownTestCase uses byteman.
+	    -->
+        <byteman.jvm.args></byteman.jvm.args>
+        <!--
+        <byteman.jvm.args>-javaagent:${org.jboss.byteman:byteman:jar}=port:${byteman.port},address:${byteman.host},boot:${org.jboss.byteman:byteman:jar} -Dorg.jboss.byteman.transform.all -Dorg.jboss.byteman.verbose=true</byteman.jvm.args>
+        -->
+								
+        <ts.elytron.cli>../shared/enable-elytron.cli</ts.elytron.cli>
+    </properties>
+    
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-elytron-integration</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-test-runner</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-model-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-deployment-scanner</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.syslog4j</groupId>
+            <artifactId>syslog4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-submit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-install</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit.junit.http</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit.junit.ssh</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Used by Git config management tests that set up a git server -->
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-auth-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-credential</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-credential-store</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-sasl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-x500-cert</artifactId>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+
+        <profile>
+            <id>manualmode.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!noManualmode</name>
+                </property>
+            </activation>
+
+            <properties>
+            </properties>
+
+            <!--
+                Server configuration executions.
+                Naming convention for executions (which we read in the log): for server config X, call it X.server
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-jboss-stores</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <mainClass>org.jboss.as.test.manualmode.GenerateJBossStores</mainClass>
+                            <classpathScope>test</classpathScope>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>process-test-resources</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/${server.output.dir.prefix}</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <excluded-packages>
+                                                <param>product.conf</param>
+                                            </excluded-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Surefire. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- Workaround for nasty and hacky tests not cleaning up completely after themselves. -->
+                            <runOrder>alphabetical</runOrder>
+                            <!-- This project includes tests of server embedding, so we cannot reuse forks
+                            as the risk of cross-test pollution is too high -->
+                            <reuseForks>false</reuseForks>
+
+                            <!-- Exclude the test cases that are part of test suites -->
+                            <excludes>
+                                <exclude>**/org/jboss/as/test/manualmode/logging/module/*TestCase.java</exclude>
+                            </excludes>
+                            <!-- Include test cases and test suites -->
+                            <includes>
+                                <include>**/*TestCase.java</include>
+                                <include>**/*TestSuite.java</include>
+                            </includes>
+
+                            <!-- Parameters to test cases. -->
+                            <systemPropertyVariables combine.children="append">
+                                <byteman.server.ipaddress>${node0}</byteman.server.ipaddress>
+                                <byteman.server.port>${byteman.port}</byteman.server.port>
+                                <jboss.home>${wildfly.home}</jboss.home>
+                                <module.path>${wildfly.home}/modules/</module.path>
+                                <jvm.args>${byteman.jvm.args} -Dorg.jboss.byteman.verbose=true -Dmaven.repo.local=${settings.localRepository} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.security} ${jvm.args.other} ${jvm.args.timeouts} -Djbossas.ts.dir=${jbossas.ts.dir}</jvm.args>
+                                <cli.jvm.args>${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</cli.jvm.args>
+                                <cli.jvm.args.non-modular>-Dmaven.repo.local=${settings.localRepository}</cli.jvm.args.non-modular>
+                                <javax.net.ssl.trustStore>${basedir}/target/test-classes/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
+                                <javax.net.ssl.keyStore>${basedir}/target/test-classes/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
+                                <javax.net.ssl.trustStorePassword>clientPassword</javax.net.ssl.trustStorePassword>
+                                <javax.net.ssl.keyStorePassword>clientPassword</javax.net.ssl.keyStorePassword>
+                            </systemPropertyVariables>
+                            <environmentVariables>
+                                <JBOSS_HOME>${wildfly.home}</JBOSS_HOME>
+                            </environmentVariables>
+                            <argLine>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dmaven.repo.local=${settings.localRepository} ${surefire.system.args}</argLine>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>properties</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-maven-plugin</artifactId>
+                        <version>1.5</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>keytool-api-1.7</artifactId>
+                                <version>1.5</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>clean-cli-vault-keystore</id>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <keystore>${basedir}/target/cli-vault.keystore</keystore>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>genseckey-cli-vault-keystore</id>
+                                <goals>
+                                    <goal>generateSecretKey</goal>
+                                </goals>
+                                <configuration>
+                                    <keystore>${basedir}/target/cli-vault.keystore</keystore>
+                                    <dname>cn=JBoss Security,ou=JBoss Division,o=RedHatInc,l=Raleigh,st=NC,c=US</dname>
+                                    <keypass>secret_1</keypass>
+                                    <storepass>secret_1</storepass>
+                                    <storetype>jceks</storetype>
+                                    <alias>vault</alias>
+                                    <keyalg>AES</keyalg>
+                                    <keysize>128</keysize>
+                                    <validity>365</validity>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>clean-server-keystore</id>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <keystore>${basedir}/target/server.keystore.jks</keystore>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>genKeyPair-server-keystore</id>
+                                <goals>
+                                    <goal>generateKeyPair</goal>
+                                </goals>
+                                <configuration>
+                                    <keystore>${basedir}/target/server.keystore.jks</keystore>
+                                    <dname>cn=JBoss Security,ou=JBoss Division,o=RedHatInc,l=Raleigh,st=NC,c=US</dname>
+                                    <keypass>secret</keypass>
+                                    <storepass>secret</storepass>
+                                    <storetype>jks</storetype>
+                                    <alias>localhost</alias>
+                                    <keyalg>RSA</keyalg>
+                                    <keysize>1024</keysize>
+                                    <validity>365</validity>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- profile to configure WildFly to use Elytron instead of legacy security: -Delytron -->
+        <profile>
+            <id>elytron.profile</id>
+            <activation>
+                <property>
+                    <name>elytron</name>
+                </property>
+                <file>
+                    <exists>${ts.elytron.cli}</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <script>${ts.elytron.cli}</script>
+                            </scripts>
+                            <jboss-home>${project.build.directory}/wildfly-core</jboss-home>
+                            <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Test against slimmed servers provisioned by Galleon -->
+        <profile>
+            <id>layers.profile</id>
+            <activation>
+                <property>
+                    <name>ts.layers</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the default provisioning -->
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>provisioning</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Provision a server with the core functionality we will provide in OpenShift images -->
+                            <execution>
+                                <id>slimmed-server-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/${server.output.dir.prefix}</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <!--<artifactId>wildfly-core-galleon-pack</artifactId>-->
+                                            <version>${project.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                            <!-- Specifically include patching -->
+                                            <included-packages>
+                                                <name>org.jboss.as.patching.cli</name>
+                                            </included-packages>
+                                            <excluded-packages>
+                                                <name>product.conf</name>
+                                            </excluded-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>core-server</layer>
+                                                <layer>core-tools</layer>
+                                                <layer>deployment-scanner</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Tests against the slimmed install -->
+                            <execution>
+                                <id>slimmed-server-surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <excludes>
+                                        <!-- No domain mode support -->
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.CLIEmbedHostControllerTestCase.java</exclude>
+                                        <!-- Exclude tests that are part of test suites -->
+                                        <exclude>**/org/jboss/as/test/manualmode/logging/module/*TestCase.java</exclude>
+                                    </excludes>
+                                    <!-- Include test cases and test suites -->
+                                    <includes>
+                                        <include>**/*TestCase.java</include>
+                                        <include>**/*TestSuite.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+        <!-- Test against bootable jar -->
+        <profile>
+            <id>bootablejar.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>   
+                        <executions>
+                            <!-- Disable the default provisioning -->
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>provisioning</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Provision a server with the core functionality we will provide in OpenShift images -->
+                            <execution>
+                                <id>bootable-jar-packaging</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <output-file-name>test-wildfly.jar</output-file-name>
+                                    <hollowJar>true</hollowJar>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <!--<artifactId>wildfly-core-galleon-pack</artifactId>-->
+                                            <version>${project.version}</version>
+                                            <!-- Specifically include patching -->
+                                            <included-packages>
+                                                <name>org.jboss.as.patching.cli</name>
+                                            </included-packages>
+                                            <excluded-packages>
+                                                <name>product.conf</name>
+                                            </excluded-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <layers>
+                                        <layer>core-server</layer>
+                                        <layer>core-tools</layer>
+                                        <layer>deployment-scanner</layer>
+                                    </layers>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Tests against the bootable jar -->
+                            <execution>
+                                <id>bootable-server-surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <wildfly.bootable.jar>true</wildfly.bootable.jar>
+                                        <wildfly.bootable.jar.jar>${project.build.directory}/test-wildfly.jar</wildfly.bootable.jar.jar>
+                                        <wildfly.bootable.jar.install.dir>${project.build.directory}/${server.output.dir.prefix}</wildfly.bootable.jar.install.dir>
+                                    </systemPropertyVariables>
+                                    <excludes>
+                                        <!-- No domain mode support -->
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.CLIEmbedHostControllerTestCase.java</exclude>
+                                        <!-- multiple server start, admin mode, ... -->
+                                        <exclude>org.jboss.as.test.manualmode.auditlog.*TestCase.java</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.auditlog.*Test.java</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.adminonly.auditlog.*TestCase.java</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.cli.boot.ops.*TestCase.java</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.suspend.*TestCase.java</exclude>
+                                        <!-- restart the server -->
+                                        <exclude>org.jboss.as.test.manualmode.deployment.DeploymentScannerRedeploymentTestCase</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.deployment.DeploymentScannerUnitTestCase</exclude>
+                                        
+                                        <!-- restart the server -->
+                                        <exclude>org.jboss.as.test.manualmode.logging.LoggingDependenciesTestCase</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.logging.LoggingPreferencesTestCase</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.logging.PerDeployLoggingTestCase</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.logging.SizeAppenderRestartTestCase</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.logging.SyslogIsNotAvailableDuringServerBootTestCase</exclude>
+                                        <!-- check that the server config exists before starting it -->
+                                        <exclude>org.jboss.as.test.manualmode.logging.capabilities.*TestCase</exclude>
+                                        <!-- requires modules to be installed -->
+                                        <exclude>org.jboss.as.test.manualmode.logging.module.*TestCase</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.logging.module.*TestSuite</exclude>
+                                        <!-- restart the server -->
+                                        <exclude>org.jboss.as.test.manualmode.management.*TestCase</exclude>
+                                        
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.ManagementOpTimeoutTestCase</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.ShutdownTestCase</exclude>
+                                        <!-- access to module to cleanup but don't exist after stop -->
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.CustomVaultInCLITestCase</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.CommandTimeoutHandlerTestCase</exclude>
+                                        <!-- no proper JBOSS_HOME dir -->
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.CliEmbedServerInProcessTestCase</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.CLIEmbedServerTestCase</exclude>
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.JbossCliClientJarJPMSSettingsTestCase</exclude>
+                                        <!-- copy standalone.xml, stop/start...-->
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.CLIScriptSupportTestCase</exclude>
+                                        <!-- remove some file after cleanup -->
+                                        <exclude>org.jboss.as.test.manualmode.management.cli.RemoveManagementRealmTestCase</exclude>
+                                        <!-- no git support -->
+                                        <exclude>org.jboss.as.test.manualmode.management.persistence.*TestCase</exclude>
+                                        
+                                        <!-- replace config file -->
+                                        <exclude>org.jboss.as.test.manualmode.mgmt.elytron.ElytronModelControllerClientTestCase</exclude>
+                                        
+                                        <!--- remove a module after having closed the server -->
+                                        <exclude>org.jboss.as.test.manualmode.expressions.CredentialStoreExpressionsTestCase</exclude>
+                                        
+                                        <!-- admin mode -->
+                                        <exclude>org.wildfly.core.test.standalone.mgmt.HTTPSManagementInterfaceTestCase</exclude>
+                                        <exclude>org.wildfly.core.test.standalone.mgmt.HTTPSManagementInterfacePKCS12TestCase</exclude>
+                                        <!-- start /stop, and install extension before start -->
+                                        <exclude>org.wildfly.core.test.standalone.mgmt.PreparedResponseTestCase</exclude>
+                                        
+                                        <!-- start/stop/start the server -->
+                                        <exclude>org.wildfly.core.test.standalone.mgmt.events.*TestCase</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

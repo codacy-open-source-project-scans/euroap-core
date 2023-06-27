@@ -1,0 +1,116 @@
+SYNOPSIS
+
+  To add a module locally
+
+    module add [--module-root-dir=modules_root_directory_path] --name=module_name 
+               [--slot=slot_name] [--resources=list_of_jars]
+               [--absolute-resources=list_of_jars] [--resource-delimiter=delimiter]
+               (--module-xml=file_path |
+                ([--dependencies=list_of_module_names]
+                 [--export-dependencies=list_of_module_names]
+                 [--properties=list_of_properties]
+                 [--main-class=fully_qualified_class_name]])
+               )
+
+  To remove a module locally
+
+    module remove --name=module_name [--slot=slot_name]
+
+
+DESCRIPTION
+
+  The command is used to add and remove modules locally.
+
+  When a module is added, the corresponding to the module name directory
+  structure will be created in the module repository. The JAR files
+  specified as resources will be copied to the module's directory,
+  the JAR files specified as absolute resources will be referenced
+  with absolute paths. Unless module.xml file was specified as an argument,
+  it will be automatically generated.
+
+  When a module is removed, its module.xml and other resources will be removed
+  from the module repository as well as its directory structure up to the point
+  where other modules met.
+
+  NOTE: the command can generate only simple module.xml files.
+  More specifically, it supports:
+  - resources-root elements that point to files;
+  - modules dependencies as simple module names;
+  - module's main-class;
+  - module properties.
+
+
+ARGUMENTS
+
+ --module-root-dir - (optional) The absolute file path to the server's modules 
+                    directory. By default the module is added to (or removed from)
+                    JBOSS_HOME/modules
+ 
+ --name          - (required) the name of the module to be added or removed.
+                   NOTE: slot is not a part of the module name.
+
+ --slot          - (optional) specifies a slot which should be created or
+                   removed. If this argument is not specified, "main" slot is
+                   assumed.
+
+ --resources     - (used with add, resources and/or absolute-resources is required
+                   unless module-xml is used) a list of filesystem paths
+                   (usually jar files) separated by a filesystem-specific
+                   path separator, i.e. '/' for Linux and '\' for Windows.
+                   The file(s) specified will be copied to the created module's directory.
+                   If the specified path is a directory, it will be recursively copied to
+                   the module directory. If the directory does not exist, an empty directory
+                   will be created in the module directory. Symbolic links are not
+                   preserved, linked content is copied.
+
+ --absolute-resources - (used with add, resources and/or absolute-resources required
+                       unless module-xml is used) a list of filesystem paths
+                       (usually jar files) separated by a filesystem-specific
+                       path separator, i.e. '/' for Linux and '\' for Windows.
+                       The file(s) specified will *NOT* be copied to the created
+                       module's directory and will be referenced with absolute path(s).
+
+ --resource-delimiter - (used with add and resources, optional)
+                       A user-defined path separator for the resources argument.
+                       If this argument is present, the command parser will use
+                       the value here instead of the filesystem-specific path
+                       separator. This allows the modules command to be used in
+                       cross-platform scripts.
+
+ --module-xml    - (used with add, optional) filesystem path to the module.xml
+                   file which should be used for the added module. The file will
+                   be copied to the created module's directory. If this argument
+                   is not specified, module.xml file will be generated in the
+                   new created module's directory.
+
+ --dependencies  - (used with add, optional) a comma-separated list of module
+                   names the module being added depends on. NOTE: In non-interactive
+                   mode this list must be surrounded by square brackets, e.g. [dep1,dep2].
+                   NOTE: this argument makes sense only when the module.xml file
+                   is generated, i.e. when the --module-xml argument isn't
+                   specified.
+
+ --export-dependencies  - (used with add, optional) a comma-separated list of module
+                   names the module being added depends on and exports.
+                   NOTE: In non-interactive mode this list must be surrounded by 
+                   square brackets, e.g. [dep1,dep2].
+                   NOTE: this argument makes sense only when the module.xml file
+                   is generated, i.e. when the --module-xml argument isn't
+                   specified.
+
+ --properties    - (used with add, optional) a comma-separated list of
+                   property_name=property_value pairs that will define module
+                   properties. NOTE: In non-interactive mode this list must be
+                   surrounded by square brackets, e.g. [prop1=val1,prop2=val2].
+                   NOTE: this argument makes sense only when the module.xml file
+                   is generated, i.e. when the --module-xml argument isn't
+                   specified.
+
+ --main-class    - (used with add, optional) a fully qualified class name that
+                   declares the modules main method.
+                   NOTE: this argument makes sense only when the module.xml file
+                   is generated, i.e. when the --module-xml argument isn't
+                   specified.
+
+--allow-nonexistent-resources - Used in conjunction with --resources in order to create
+                                empty directories for referenced resources that do not exist.

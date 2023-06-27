@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<host name="primary" xmlns="urn:jboss:domain:20.0">
+
+    <management>
+        <management-interfaces>
+            <http-interface>
+                <http-upgrade enabled="true"/>
+                <socket interface="management" port="${jboss.management.http.port:9990}"/>
+            </http-interface>
+        </management-interfaces>
+    </management>
+
+    <domain-controller>
+       <local/>
+       <!-- Alternative remote domain controller configuration with a host and port -->
+       <!-- <remote host="${jboss.domain.primary.address}" port="${jboss.domain.primary.port:9999}" security-realm="ManagementRealm"/> -->
+    </domain-controller>
+
+    <interfaces>
+        <interface name="management">
+            <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+        </interface>
+        <interface name="public">
+           <inet-address value="${jboss.bind.address:127.0.0.1}"/>
+        </interface>
+        <interface name="unsecure">
+            <!-- Used for IIOP sockets in the standard configuration.
+                 To secure JacORB you need to setup SSL -->
+            <inet-address value="${jboss.bind.address.unsecure:127.0.0.1}"/>
+        </interface>
+    </interfaces>
+
+	<jvms>
+	   <jvm name="default">
+          <heap size="64m" max-size="256m"/>
+          <permgen size="256m" max-size="256m"/>
+            <jvm-options>
+                <option value="-server"/>
+            </jvm-options>
+       </jvm>
+	</jvms>
+
+    <servers>
+        <server name="server-one" group="main-server-group">
+            <!-- Remote JPDA debugging for a specific server
+            <jvm name="default">
+              <jvm-options>
+                <option value="-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"/>
+              </jvm-options>
+           </jvm>
+           -->
+        </server>
+        <server name="server-two" group="main-server-group" auto-start="true">
+            <!-- server-two avoids port conflicts by incrementing the ports in
+                 the default socket-group declared in the server-group -->
+            <socket-bindings port-offset="150"/>
+        </server>
+        <server name="server-three" group="other-server-group" auto-start="false">
+            <!-- server-three avoids port conflicts by incrementing the ports in
+                 the default socket-group declared in the server-group -->
+            <socket-bindings port-offset="250"/>
+        </server>
+        <server name="server-four" group="other-server-group" auto-start="false">
+            <jvm name="default">
+                <heap size="64m" max-size="512m"/>
+            </jvm>
+            <socket-bindings socket-binding-group="full-ha-sockets" default-interface="public-two"/>
+        </server>
+    </servers>
+</host>

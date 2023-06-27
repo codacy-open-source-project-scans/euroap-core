@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<host name="primary" xmlns="urn:jboss:domain:20.0">
+
+    <!--  An interface is always required by the parser -->
+    <management>
+        <management-interfaces>
+            <http-interface>
+                <http-upgrade enabled="true"/>
+                <socket interface="management" port="${jboss.management.http.port:9990}"/>
+            </http-interface>
+        </management-interfaces>
+    </management>
+
+    <servers>
+        <server name="server-one" group="main-server-group">
+		   <jvm name="empty"/>
+        </server>
+    </servers>
+</host>

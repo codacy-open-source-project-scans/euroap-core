@@ -1,0 +1,80 @@
+<subsystem xmlns="urn:wildfly:elytron:18.0">
+    <security-domains>
+        <security-domain name="TestingDomain" default-realm="PropRealm" pre-realm-principal-transformer="tree" evidence-decoder="aggregateEvidenceDecoder" role-decoder="ipRoleDecoder1">
+            <realm name="PropRealm"/>
+        </security-domain>
+        <security-domain name="TestingDomainIPv6" default-realm="PropRealm" pre-realm-principal-transformer="tree" evidence-decoder="aggregateEvidenceDecoder" role-decoder="ipv6RoleDecoder">
+            <realm name="PropRealm"/>
+        </security-domain>
+        <security-domain name="TestingDomainRegex" default-realm="PropRealm" pre-realm-principal-transformer="tree" evidence-decoder="aggregateEvidenceDecoder" role-decoder="regexRoleDecoder">
+            <realm name="PropRealm"/>
+        </security-domain>
+        <security-domain name="TestingDomainUpperCase" default-realm="PropRealm" pre-realm-principal-transformer="upperCase" evidence-decoder="aggregateEvidenceDecoder" role-decoder="regexRoleDecoder">
+            <realm name="PropRealm"/>
+        </security-domain>
+        <security-domain name="TestingDomainLowerCase" default-realm="PropRealm" pre-realm-principal-transformer="lowerCase" evidence-decoder="aggregateEvidenceDecoder" role-decoder="regexRoleDecoder">
+            <realm name="PropRealm"/>
+        </security-domain>
+        <security-domain name="TestingDomainRegexIPv6" default-realm="PropRealm" pre-realm-principal-transformer="tree" evidence-decoder="aggregateEvidenceDecoder" role-decoder="ipv6RegexRoleDecoder">
+            <realm name="PropRealm"/>
+        </security-domain>
+        <security-domain name="TestingDomainAggregate" default-realm="PropRealm" pre-realm-principal-transformer="tree" evidence-decoder="aggregateEvidenceDecoder" role-decoder="aggregateRoleDecoder">
+            <realm name="PropRealm"/>
+        </security-domain>
+        <security-domain name="CustomTestingDomain" default-realm="PropRealm" evidence-decoder="customEvidenceDecoder">
+            <realm name="PropRealm"/>
+        </security-domain>
+    </security-domains>
+    <security-realms>
+        <properties-realm name="PropRealm">
+            <users-properties path="users-hashed.properties" relative-to="jboss.server.config.dir"/>
+        </properties-realm>
+    </security-realms>
+    <mappers>
+
+        <aggregate-principal-transformer name="tree">
+            <principal-transformer name="jbossEmail" />
+            <principal-transformer name="wildflyEmail" />
+            <principal-transformer name="genericEmail" />
+        </aggregate-principal-transformer>
+
+        <chained-principal-transformer name="jbossEmail">
+            <principal-transformer name="isJbossEmail"/>
+            <principal-transformer name="jbossToOrg"/>
+        </chained-principal-transformer>
+
+        <chained-principal-transformer name="wildflyEmail">
+            <principal-transformer name="isWildflyEmail"/>
+            <principal-transformer name="removeWildflyAt"/>
+        </chained-principal-transformer>
+
+        <regex-principal-transformer name="removeWildflyAt" pattern="@wildfly.org" replacement=""/>
+        <regex-principal-transformer name="jbossToOrg" pattern=".com" replacement=".org"/>
+        <regex-validating-principal-transformer name="isJbossEmail" pattern="(.*)@jboss.com"/>
+        <regex-validating-principal-transformer name="isWildflyEmail" pattern="(.*)@wildfly.org"/>
+        <regex-validating-principal-transformer name="genericEmail" pattern="(.*)@(.*)"/>
+
+        <x500-subject-evidence-decoder name="subjectDecoder" />
+        <x509-subject-alt-name-evidence-decoder name="rfc822Decoder" alt-name-type="rfc822Name" segment="1" />
+        <custom-evidence-decoder name="customEvidenceDecoder" class-name="org.wildfly.extension.elytron.CustomEvidenceDecoder" module="l.m" />
+        <aggregate-evidence-decoder name="aggregateEvidenceDecoder">
+            <evidence-decoder name="rfc822Decoder"/>
+            <evidence-decoder name="subjectDecoder"/>
+        </aggregate-evidence-decoder>
+
+        <source-address-role-decoder name="ipRoleDecoder1" source-address="10.12.14.16" roles="admin user"/>
+        <source-address-role-decoder name="ipRoleDecoder2" source-address="10.12.14.18" roles="employee"/>
+        <source-address-role-decoder name="ipRoleDecoder3" pattern="10\.12\.14\.\d+$" roles="internal"/>
+        <source-address-role-decoder name="ipv6RoleDecoder" source-address="2001:db8:85a3:0:0:8a2e:370:7334" roles="admin user"/>
+        <source-address-role-decoder name="regexRoleDecoder" pattern="10\.12\.14\.\d+$" roles="admin user"/>
+        <source-address-role-decoder name="ipv6RegexRoleDecoder" pattern="2001\:db8\:85a3\:0\:0\:8a2e\:370\:\d+$" roles="admin user"/>
+        <aggregate-role-decoder name="aggregateRoleDecoder">
+            <role-decoder name="ipRoleDecoder1"/>
+            <role-decoder name="ipRoleDecoder2"/>
+            <role-decoder name="ipRoleDecoder3"/>
+        </aggregate-role-decoder>
+
+        <case-principal-transformer name="upperCase" upper-case="true"/>
+        <case-principal-transformer name="lowerCase" upper-case="false"/>
+    </mappers>
+</subsystem>

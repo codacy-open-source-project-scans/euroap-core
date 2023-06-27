@@ -1,0 +1,51 @@
+<subsystem xmlns="urn:wildfly:elytron:18.0" default-authentication-context="child">
+    <authentication-client>
+        <authentication-configuration name="base" anonymous="true" />
+        <authentication-configuration name="most"
+            extends="base"
+            authentication-name="auth-name"
+            authorization-name="authz-name"
+            host="myHost"
+            protocol="myProtocol"
+            port="8080"
+            realm="myRealm">
+            <credential-reference clear-text="password" />
+        </authentication-configuration>
+        <authentication-configuration name="forward"
+            extends="base"
+            security-domain="TestDomain"
+            forwarding-mode="authentication">
+            <mechanism-properties>
+                <property name="a" value="b" />
+                <property name="c" value="d" />
+            </mechanism-properties>
+        </authentication-configuration>
+        <authentication-configuration name="forward-authz"
+            extends="base"
+            security-domain="TestDomain"
+            forwarding-mode="authorization"
+            authentication-name="my-server-login">
+            <credential-reference clear-text="supersecret!"/>
+        </authentication-configuration>
+        <authentication-configuration name="selector"
+            extends = "base"
+            sasl-mechanism-selector="(DIGEST-SHA-256||SCRAM-SHA-256) #PLUS">
+        </authentication-configuration>
+        <authentication-context name="base">
+            <match-rule match-abstract-type="a" match-abstract-type-authority="aa" match-host="b" match-local-security-domain="c" match-path="d" match-port="2020" match-protocol="e" match-urn="g"
+                match-user="h" authentication-configuration="base" />
+            <match-rule match-no-user="true" authentication-configuration="most" />
+        </authentication-context>
+        <authentication-context name="child" extends="base">
+            <match-rule match-no-user="true" authentication-configuration="base" />
+        </authentication-context>
+    </authentication-client>
+    <security-domains>
+        <security-domain name="TestDomain" default-realm="identity">
+          <realm name="identity" />
+        </security-domain>
+    </security-domains>
+    <security-realms>
+        <identity-realm name="identity" identity="identity" />
+    </security-realms>
+</subsystem>

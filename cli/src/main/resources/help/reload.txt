@@ -1,0 +1,124 @@
+SYNOPSIS
+
+   Standalone mode:
+
+      reload [--start-mode=admin-only|normal|suspend]
+             [--use-current-server-config=true|false]
+             [--server-config=new_server_config_file_name]
+
+   Domain mode:
+
+      reload --host=host_name [--admin-only=true|false]
+             [--restart-servers=true|false]
+             [--user-current-domain-config=true|false]
+             [--user-current-host-config=true|false]
+             [--domain-config=new_domain_config_file_name]
+             [--host-config=new_host_config_file_name]
+
+DESCRIPTION
+
+    Sends the :reload operation request to the server/domain controller
+    and waits for the controller to close the connection and then
+    it returns the control back to the client. It does not put
+    the CLI client into the disconnected state. Instead, for the
+    next entered command or operation it will try to automatically
+    re-connect to the controller.
+
+    If there was an i/o error while sending the request or receiving
+    the response, the reload handler will disconnect from the controller.
+
+    If the reload operation failed, i.e. the response received successfully
+    indicated a failure, the handler will log the failure message and
+    will not disconnect from the controller.
+
+    NOTE: this command cannot be used in a batch because the handler
+    is waiting for the controller to shutdown before returning the
+    control back to the client which would not be possible if the
+    command was executed as a step in a composite operation.
+    So, if there is a need to reload the controller from a batch,
+    :reload operation must be used instead (and should be the last
+    operation in the batch).
+
+ARGUMENTS
+
+--admin-only   - Domain mode only, deprecated for standalone.
+                 Whether the controller should start in running mode ADMIN_ONLY
+                 when it restarts. An ADMIN_ONLY controller will start any
+                 configured management interfaces and accept management
+                 requests, but will not start servers or, if this host
+                 controller is the primary Host Controller for the domain, accept incoming
+                 connections from secondary host controllers. For embedded host
+                 controllers, this value is required and must be set to true.
+                 If not present, false value is assumed.
+
+--start-mode   - Standalone mode only.
+                 The state the server will be once reloaded. Can be one of the
+                 following values: admin-only, normal, suspend.
+                 - admin-only: Whether the controller should start in running
+                 mode ADMIN_ONLY when it restarts.
+                 An ADMIN_ONLY controller will start any configured management
+                 interfaces and accept management requests, but will not start
+                 servers or, if this host controller is the primary Host Controller for the domain,
+                 accept incoming connections from secondary host controllers.
+                 For embedded host controllers, this value is required.
+                 - normal: Whether the controller should start in running
+                 mode NORMAL when it restarts.
+                 - suspend: Whether the controller should start in suspend state
+                 SUSPENDED when it restarts. A SUSPENDED controller allows
+                 modifications to be made before it starts accepting requests.
+
+ --host        - is allowed and required only in the domain mode, specifies
+                 the host name to reload.
+
+ --restart-servers  - optional, allowed only in the domain mode. If true the
+                      servers will be restarted, and if false the servers will
+                 be left running and reconnect to the Host Controller when
+                 started again. If not present, true value is assumed.
+
+ --use-current-domain-config  - optional, allowed only in the domain mode. Only
+                                has an effect if --read-only-domain-config was
+                 specified when starting the controller. In that case, if this
+                 parameter is set to false the reloaded controller loads the
+                 original configuration version; if null or true the current
+                 runtime version of the model is used.
+                 If not present, true value is assumed.
+
+ --use-current-host-config  - optional, allowed only in the domain mode. Only
+                              has an effect if --read-only-host-config was
+                 specified when starting the controller. In that case, if this
+                 parameter is set to false the reloaded controller loads the
+                 original configuration version; if null or true the current
+                 runtime version of the model is used.
+                 If not present, true value is assumed.
+
+ --use-current-server-config  - optional, allowed only in the standalone mode.
+                                Only has an effect if --read-only-server-config
+                 was specified when starting the server. In that case, if this
+                 parameter is set to false the reloaded server loads the
+                 original configuration version; if null or true the current
+                 runtime version of the model is used.
+                 If not present, true value is assumed.
+
+ --domain-config  - optional, allowed only in the domain mode. Used to specify
+                 a new file name for the domain config. The same rules as for
+                 the --domain-config flag used on the command line when starting
+                 the host apply. When making changes to the model after the
+                 reload, the changes will still be persisted to the original
+                 domain configuration file that was used to first boot up the
+                 host controller.
+
+ --host-config   - optional, allowed only in the domain mode. Used to specify
+                 a new file name for the host config. The same rules as for
+                 the --host-config flag used on the command line when starting
+                 the host apply. When making changes to the model after the
+                 reload, the changes will still be persisted to the original
+                 host configuration file that was used to first boot up the
+                 host controller.
+
+ --server-config   - optional, allowed only in the standalone mode. Used to
+                 specify a new file name for the host config. The same rules as
+                 for the --host-config flag used on the command line when
+                 starting the server apply. When making changes to the model
+                 after the reload, the changes will still be persisted to the
+                 original server configuration file that was used to first
+                 boot up the server.
