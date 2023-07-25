@@ -33,7 +33,7 @@
 
     <groupId>org.wildfly.core</groupId>
     <artifactId>wildfly-core-parent</artifactId>
-    <version>21.1.0.Beta3-SNAPSHOT</version>
+    <version>22.0.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -184,7 +184,7 @@
         <version.com.fasterxml.jackson>2.13.4</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}.1</version.com.fasterxml.jackson.databind>
         <version.com.jcraft.jsch>0.1.55</version.com.jcraft.jsch>
-        <version.commons-cli>1.4</version.commons-cli>
+        <version.commons-cli>1.5.0</version.commons-cli>
         <version.commons-collections>3.2.2</version.commons-collections>
         <version.commons-lang3>3.12.0</version.commons-lang3>
         <version.commons-io>2.10.0</version.commons-io>
@@ -226,7 +226,7 @@
         <version.org.jboss.jboss-dmr>1.6.1.Final</version.org.jboss.jboss-dmr>
         <version.org.jboss.jboss-vfs>3.3.0.Final</version.org.jboss.jboss-vfs>
         <version.org.jboss.logging.commons-logging-jboss-logging>1.0.0.Final</version.org.jboss.logging.commons-logging-jboss-logging>
-        <version.org.jboss.logging.jboss-logging>3.4.3.Final</version.org.jboss.logging.jboss-logging>
+        <version.org.jboss.logging.jboss-logging>3.5.3.Final</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.logging.jboss-logging-tools>2.2.1.Final</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.logging.jul-to-slf4j-stub>1.0.1.Final</version.org.jboss.logging.jul-to-slf4j-stub>
         <version.org.jboss.logmanager.jboss-logmanager>2.1.19.Final</version.org.jboss.logmanager.jboss-logmanager>
