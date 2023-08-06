@@ -23,6 +23,7 @@
 package org.jboss.as.server.operations;
 
 import static org.jboss.as.remoting.RemotingHttpUpgradeService.HTTP_UPGRADE_REGISTRY;
+import static org.jboss.as.server.ServerService.SERVER_ENVIRONMENT_CAPABILITY_NAME;
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SECURE_SOCKET_BINDING;
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SOCKET_BINDING;
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SOCKET_BINDING_CAPABILITY_NAME;
@@ -58,7 +59,6 @@ import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.ExternalManagementRequestExecutor;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.mgmt.HttpManagementRequestsService;
@@ -145,7 +145,6 @@ public class HttpManagementAddHandler extends BaseHttpInterfaceAddStepHandler {
             ServerLogger.ROOT_LOGGER.httpManagementInterfaceIsUnsecured();
         }
 
-        ServerEnvironment environment = (ServerEnvironment) context.getServiceRegistry(false).getRequiredService(ServerEnvironmentService.SERVICE_NAME).getValue();
         final CapabilityServiceBuilder<?> builder = serviceTarget.addCapability(EXTENSIBLE_HTTP_MANAGEMENT_CAPABILITY);
         final Consumer<HttpManagement> hmConsumer = builder.provides(EXTENSIBLE_HTTP_MANAGEMENT_CAPABILITY);
         final Supplier<ListenerRegistry> lrSupplier = builder.requires(RemotingServices.HTTP_LISTENER_REGISTRY);
@@ -158,6 +157,13 @@ public class HttpManagementAddHandler extends BaseHttpInterfaceAddStepHandler {
         final Supplier<XnioWorker> xwSupplier = builder.requires(ManagementWorkerService.SERVICE_NAME);
         final Supplier<Executor> eSupplier = builder.requires(ExternalManagementRequestExecutor.SERVICE_NAME);
         final Supplier<HttpAuthenticationFactory> hafSupplier = httpAuthenticationFactory != null ? builder.requiresCapability(HTTP_AUTHENTICATION_FACTORY_CAPABILITY, HttpAuthenticationFactory.class, httpAuthenticationFactory) : null;
+        Supplier<ServerEnvironment> environment = builder.requiresCapability(SERVER_ENVIRONMENT_CAPABILITY_NAME, ServerEnvironment.class);
+        Supplier<String> consoleSlot = new Supplier<>() {
+            @Override
+            public String get() {
+                return environment.get().getProductConfig().getConsoleSlot();
+            }
+        };
         Supplier<SecurityDomain> virtualSecurityDomainSupplier = null;
         Supplier<HttpServerAuthenticationMechanismFactory> virtualMechanismFactorySupplier = null;
         if (VirtualDomainMarkerUtility.isVirtualDomainRequired(context)) {
@@ -170,7 +176,7 @@ public class HttpManagementAddHandler extends BaseHttpInterfaceAddStepHandler {
         final Supplier<SSLContext> scSupplier = sslContext != null ? builder.requiresCapability(SSL_CONTEXT_CAPABILITY, SSLContext.class, sslContext) : null;
         final UndertowHttpManagementService undertowService = new UndertowHttpManagementService(hmConsumer, lrSupplier, mcSupplier, sbSupplier, ssbSupplier, sbmSupplier,
                 null, null, rpSupplier, xwSupplier, eSupplier, hafSupplier, scSupplier, null, null, commonPolicy.getAllowedOrigins(), consoleMode,
-                environment.getProductConfig().getConsoleSlot(), commonPolicy.getConstantHeaders(), caSupplier, virtualSecurityDomainSupplier, virtualMechanismFactorySupplier);
+                consoleSlot, commonPolicy.getConstantHeaders(), caSupplier, virtualSecurityDomainSupplier, virtualMechanismFactorySupplier);
         builder.setInstance(undertowService);
         builder.install();
 
