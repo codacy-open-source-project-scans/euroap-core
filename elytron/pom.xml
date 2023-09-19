@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wildfly.core</groupId>
         <artifactId>wildfly-core-parent</artifactId>
-        <version>22.0.0.Beta2-SNAPSHOT</version>
+        <version>22.0.0.Beta3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-elytron-integration</artifactId>
@@ -162,7 +162,7 @@
         <dependency>
             <groupId>org.apache.directory.api</groupId>
             <artifactId>api-ldap-net-mina</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.3</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -382,9 +382,6 @@
                                 <exclude>legacy*.xml</exclude>
                             </excludes>
                             <systemId>src/main/resources/schema/wildfly-elytron_18_0.xsd</systemId>
-                        </validationSet>
-                        <validationSet>
-                            <dir>src/main/resources/subsystem-templates</dir>
                         </validationSet>
                         <validationSet>
                             <dir>src/main/resources/schema</dir>
