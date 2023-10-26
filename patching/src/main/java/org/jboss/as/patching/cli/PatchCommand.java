@@ -1,17 +1,6 @@
 /*
-Copyright 2017 Red Hat, Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.patching.cli;
 
@@ -49,7 +38,12 @@ public class PatchCommand implements Command<CLICommandInvocation> {
     }
 
     /**
-     * Hides the high level patch commands on a standalone installation only.
+     * Activates the high level patch command only under Domain Mode context.
+     *
+     * Since the introduction of Prospero as the tool to patch, the "patch" command only makes sense in domain
+     * mode to patch legacy host controllers that do not use Prospero. For example, in mixed domains where you
+     * need to patch a remote secondary host using the Domain Controller. The remote legacy hosts could only understand
+     * the "patch" command. Only in such a case, we activate the "patch" command.
      */
     public static class PatchCommandActivator extends AbstractCommandActivator {
         @Override

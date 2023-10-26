@@ -1,26 +1,10 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.core.model.test.servergroup;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -28,13 +12,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
+import static org.junit.Assert.fail;
 
 import org.hamcrest.MatcherAssert;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
@@ -71,30 +53,10 @@ public class DomainServerGroupTestCase extends AbstractCoreModelTest {
                     .createContentRepositoryContent("12345678901234567890")
                     .createContentRepositoryContent("09876543210987654321")
                     .build();
-        } catch (XMLStreamException ex) {
-            String expectedMessage = ControllerLogger.ROOT_LOGGER.duplicateNamedElement("foo.war", new Location() {
-                public int getLineNumber() {
-                    return 1634;
-                }
-
-                public int getColumnNumber() {
-                    return 1;
-                }
-
-                public int getCharacterOffset() {
-                    return 1;
-                }
-
-                public String getPublicId() {
-                    return "";
-                }
-
-                public String getSystemId() {
-                    return "";
-                }
-            }).getMessage();
-            expectedMessage = expectedMessage.substring(expectedMessage.indexOf("WFLYCTL0073:"));
-            MatcherAssert.assertThat(ex.getMessage(), containsString(expectedMessage));
+            fail("Expected boot failed");
+        } catch (OperationFailedException ex) {
+            final String failureDescription = ex.getFailureDescription().asString();
+            MatcherAssert.assertThat(failureDescription, allOf(containsString("WFLYDC0063:"), containsString("foo.war")));
         }
     }
 

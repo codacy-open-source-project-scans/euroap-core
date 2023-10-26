@@ -1,20 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- *
- * Copyright 2018 Red Hat, Inc., and individual contributors
- * as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.scripts.test;
@@ -53,6 +39,14 @@ public class CliScriptTestCase extends ScriptTestCase {
 
         validateProcess(script);
 
+        final ModelNode result = outputToModelNode(script);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            Assert.fail(result.asString());
+        }
+        Assert.assertEquals(ClientConstants.CONTROLLER_PROCESS_STATE_RUNNING, Operations.readResult(result).asString());
+    }
+
+    private static ModelNode outputToModelNode(final ScriptProcess script) throws IOException {
         StringBuilder builder = new StringBuilder();
         // Read the output lines which should be valid DMR
         for (String line : script.getStdout()) {
@@ -62,10 +56,12 @@ public class CliScriptTestCase extends ScriptTestCase {
             }
             builder.append(line);
         }
-        final ModelNode result = ModelNode.fromString(builder.toString());
-        if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(result.asString());
+        final String modelNodeInput = builder.toString();
+        try {
+            return ModelNode.fromString(modelNodeInput);
+        } catch (Exception e) {
+            Assert.fail(String.format("Cannot convert %s into a ModelNode -- %s", modelNodeInput, e));
+            throw new IllegalStateException("unreachable");
         }
-        Assert.assertEquals(ClientConstants.CONTROLLER_PROCESS_STATE_RUNNING, Operations.readResult(result).asString());
     }
 }

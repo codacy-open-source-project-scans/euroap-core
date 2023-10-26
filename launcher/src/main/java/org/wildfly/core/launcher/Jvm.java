@@ -1,20 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- *
- * Copyright 2019 Red Hat, Inc., and individual contributors
- * as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.core.launcher;
@@ -30,8 +16,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.wildfly.core.launcher.logger.LauncherMessages;
 
@@ -43,8 +27,8 @@ import org.wildfly.core.launcher.logger.LauncherMessages;
 class Jvm {
     private static final String JAVA_EXE;
     private static final Path JAVA_HOME;
-    private static final boolean MODULAR_JVM;
-    private static final boolean ENHANCED_SECURITY_MANAGER;
+    private static final boolean MODULAR_JVM = true;
+    private static final boolean ENHANCED_SECURITY_MANAGER = Runtime.version().feature() >= 12;
 
     static {
         String exe = "java";
@@ -54,22 +38,6 @@ class Jvm {
         JAVA_EXE = exe;
         final String javaHome = System.getProperty("java.home");
         JAVA_HOME = Paths.get(javaHome);
-
-        // Assume we're in a modular environment
-        final String javaSpecVersion = System.getProperty("java.specification.version");
-        boolean modularJvm = true;
-        boolean enhancedSecurityManager = false;
-        int jvmVersion = 8;
-        if (javaSpecVersion != null) {
-            final Matcher matcher = Pattern.compile("^(?:1\\.)?(\\d+)$").matcher(javaSpecVersion);
-            if (matcher.find()) {
-                jvmVersion = Integer.parseInt(matcher.group(1));
-                modularJvm = jvmVersion >= 9;
-                enhancedSecurityManager = jvmVersion >= 12;
-            }
-        }
-        MODULAR_JVM = modularJvm;
-        ENHANCED_SECURITY_MANAGER = enhancedSecurityManager;
     }
 
     private static final Jvm DEFAULT = new Jvm(JAVA_HOME, MODULAR_JVM, ENHANCED_SECURITY_MANAGER);

@@ -1,44 +1,30 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.controller;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
+import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.logging.ControllerLogger;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -170,7 +156,6 @@ public class SimpleResourceDefinition implements ResourceDefinition {
      * Registers an add operation handler or a remove operation handler if one was provided to the constructor.
      */
     @Override
-    @SuppressWarnings("deprecation")
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         if (addHandler != null) {
             registerAddOperation(resourceRegistration, addHandler, addRestartLevel);
@@ -234,77 +219,81 @@ public class SimpleResourceDefinition implements ResourceDefinition {
     }
 
     /**
-     * Registers add operation
+     * Returns the parameters of the {@value ModelDescriptionConstants#ADD} resource operation.
+     * The default implementation returns all registered attributes, excluding runtime-only and resource-only.
+     * @param registration the registration of this resource definition
+     * @return an array of attribute definitions
+     */
+    protected AttributeDefinition[] getAddOperationParameters(ManagementResourceRegistration registration) {
+        Stream<AttributeDefinition> attributes = registration.getAttributes(PathAddress.EMPTY_ADDRESS).values().stream()
+                .filter(AttributeAccess.Storage.CONFIGURATION) // Ignore runtime attributes
+                .map(AttributeAccess::getAttributeDefinition)
+                .filter(Predicate.not(AttributeDefinition::isResourceOnly)) // Ignore resource-only attributes
+                ;
+        if (registration.isOrderedChildResource()) {
+            attributes = Stream.concat(Stream.of(DefaultResourceAddDescriptionProvider.INDEX), attributes);
+        }
+        return attributes.toArray(AttributeDefinition[]::new);
+    }
+
+    /**
+     * Registers the {@value ModelDescriptionConstants#ADD} resource operation.
      *
      * @param registration resource on which to register
      * @param handler      operation handler to register
      * @param flags        with flags
-     * @deprecated use {@link #registerAddOperation(org.jboss.as.controller.registry.ManagementResourceRegistration, AbstractAddStepHandler, org.jboss.as.controller.registry.OperationEntry.Flag...)}
      */
-    @Deprecated
-    @SuppressWarnings("deprecation")
     protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        Collection<? extends AttributeDefinition> parameters = (handler instanceof OperationDescriptor) ? ((OperationDescriptor) handler).getAttributes() : Collections.emptyList();
-        if (handler instanceof DescriptionProvider) {
-            registration.registerOperationHandler(getOperationDefinition(ModelDescriptionConstants.ADD,
-                                (DescriptionProvider) handler, parameters, OperationEntry.EntryType.PUBLIC,flags)
-                               , handler);
-
-        } else {
-            registration.registerOperationHandler(getOperationDefinition(ModelDescriptionConstants.ADD,
-                    new DefaultResourceAddDescriptionProvider(registration, descriptionResolver, orderedChild),
-                    parameters,
-                    OperationEntry.EntryType.PUBLIC,
-                    flags)
-                    , handler);
-        }
+        DescriptionProvider descriptionProvider = (handler instanceof DescriptionProvider) ? (DescriptionProvider) handler : new DefaultResourceAddDescriptionProvider(registration, this.descriptionResolver, this.orderedChild);
+        OperationDefinition definition = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.descriptionResolver)
+                .setParameters(this.getAddOperationParameters(registration))
+                .setDescriptionProvider(descriptionProvider)
+                .setEntryType(OperationEntry.EntryType.PUBLIC)
+                .withFlags(flags)
+                .build();
+        registration.registerOperationHandler(definition, handler);
     }
 
-    private OperationDefinition getOperationDefinition(String operationName, DescriptionProvider descriptionProvider, Collection<? extends AttributeDefinition> parameters, OperationEntry.EntryType entryType, OperationEntry.Flag... flags){
-        return new SimpleOperationDefinitionBuilder(operationName, descriptionResolver)
-                .setParameters(parameters.toArray(new AttributeDefinition[parameters.size()]))
-                .withFlags(flags)
-                .setEntryType(entryType)
+    /**
+     * Registers the {@value ModelDescriptionConstants#REMOVE} resource operation.
+     *
+     * @param registration resource on which to register
+     * @param handler      operation handler to register
+     * @param flags        with flags
+     */
+    protected void registerRemoveOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
+        DescriptionProvider descriptionProvider = (handler instanceof DescriptionProvider) ? (DescriptionProvider) handler : new DefaultResourceRemoveDescriptionProvider(this.descriptionResolver);
+        OperationDefinition definition = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.descriptionResolver)
                 .setDescriptionProvider(descriptionProvider)
+                .setEntryType(OperationEntry.EntryType.PUBLIC)
+                .withFlags(flags)
                 .build();
-
+        registration.registerOperationHandler(definition, handler);
     }
 
     /**
      * Registers add operation
-     * <p/>
-     * Registers add operation
      *
      * @param registration resource on which to register
      * @param handler      operation handler to register
      * @param flags        with flags
+     * @deprecated Redundant with {@link #registerAddOperation(ManagementResourceRegistration, OperationStepHandler, org.jboss.as.controller.registry.OperationEntry.Flag...)
      */
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final AbstractAddStepHandler handler,
-                                        OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(getOperationDefinition(ModelDescriptionConstants.ADD,
-                new DefaultResourceAddDescriptionProvider(registration, descriptionResolver, orderedChild), handler.getAttributes(), OperationEntry.EntryType.PUBLIC, flags)
-                , handler);
-    }
-
     @Deprecated
-    @SuppressWarnings("deprecation")
-    protected void registerRemoveOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler,
-                                           OperationEntry.Flag... flags) {
-        if (handler instanceof DescriptionProvider) {
-            registration.registerOperationHandler(getOperationDefinition(ModelDescriptionConstants.REMOVE,
-                                            (DescriptionProvider) handler, Collections.emptyList(), OperationEntry.EntryType.PUBLIC,flags)
-                                           , handler);
-        } else {
-            OperationDefinition opDef = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, descriptionResolver)
-                    .withFlags(flags)
-                    .build();
-            registration.registerOperationHandler(opDef, handler);
-        }
+    protected void registerAddOperation(final ManagementResourceRegistration registration, final AbstractAddStepHandler handler, OperationEntry.Flag... flags) {
+        this.registerAddOperation(registration, (OperationStepHandler) handler, flags);
     }
 
-    @SuppressWarnings("deprecation")
-    protected void registerRemoveOperation(final ManagementResourceRegistration registration, final AbstractRemoveStepHandler handler,
-                                           OperationEntry.Flag... flags) {
+    /**
+     * Registers remove operation
+     *
+     * @param registration resource on which to register
+     * @param handler      operation handler to register
+     * @param flags        with flags
+     * @deprecated Redundant with {@link #registerRemoveOperation(ManagementResourceRegistration, OperationStepHandler, org.jboss.as.controller.registry.OperationEntry.Flag...)
+     */
+    @Deprecated
+    protected void registerRemoveOperation(final ManagementResourceRegistration registration, final AbstractRemoveStepHandler handler, OperationEntry.Flag... flags) {
         registerRemoveOperation(registration, (OperationStepHandler) handler, flags);
     }
 

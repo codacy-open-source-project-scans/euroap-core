@@ -1,24 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
@@ -131,6 +113,36 @@ public class CliCompletionTestCase {
     public void helpWithDeploymentTest() {
         for (List<String> candidates : getCandidatesLists("help deployment ", true, -1)) {
                 assertTrue(candidates.toString(), candidates.contains("deploy-file"));
+        }
+    }
+
+    /**
+     * Checks CLI completion for "patch" command
+     */
+    @Test
+    public void patchTest() {
+        for (List<String> candidates : getCandidatesLists("patch", true, -1)) {
+            assertTrue(candidates.toString(), candidates.contains("patch"));
+        }
+    }
+
+    /**
+     * Checks CLI completion for "pat" command
+     */
+    @Test
+    public void patchCompleteTest() {
+        for (List<String> candidates : getCandidatesLists("pat", true, -1)) {
+            assertTrue(candidates.toString(), candidates.contains("patch"));
+        }
+    }
+
+    /**
+     * Checks CLI completion for "patch in" command
+     */
+    @Test
+    public void patchInfoCompleteTest() {
+        for (List<String> candidates : getCandidatesLists("patch in", true, -1)) {
+            assertTrue(candidates.toString(), candidates.contains("info"));
         }
     }
 
@@ -1158,10 +1170,12 @@ public class CliCompletionTestCase {
                 List<String> candidates = new ArrayList<>();
                 ctx.getDefaultCommandCompleter().complete(ctx, cmd,
                         cmd.length(), candidates);
-                assertTrue(candidates.toString(), candidates.size() == 1);
+                assertTrue(candidates.toString(), candidates.size() == 2);
+                assertTrue(candidates.toString(), candidates.contains(" "));
                 assertTrue(candidates.toString(), candidates.contains("namespaces"));
-                candidates = complete(ctx, cmd, false, cmd.length() - "name".length());
-                assertTrue(candidates.toString(), candidates.size() == 1);
+                candidates = complete(ctx, cmd, false, cmd.length());
+                assertTrue(candidates.toString(), candidates.size() == 2);
+                assertTrue(candidates.toString(), candidates.contains(" "));
                 assertTrue(candidates.toString(), candidates.contains("namespaces"));
             }
 
@@ -1173,6 +1187,17 @@ public class CliCompletionTestCase {
                 assertTrue(candidates.toString(), candidates.isEmpty());
                 candidates = complete(ctx, cmd, null, -1);
                 assertTrue(candidates.toString(), candidates.isEmpty());
+            }
+
+            {
+                String cmd = "read-attribute management-minor-version";
+                List<String> candidates = new ArrayList<>();
+                ctx.getDefaultCommandCompleter().complete(ctx, cmd,
+                        cmd.length(), candidates);
+                assertTrue(candidates.toString(), candidates.size() == 1);
+                assertTrue(candidates.toString(), candidates.contains(" "));
+                candidates = complete(ctx, cmd, false, cmd.length());
+                assertTrue(candidates.toString(), candidates.contains(" "));
             }
 
             {

@@ -1,32 +1,17 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.controller.operations.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
+import java.util.EnumSet;
 import java.util.logging.Level;
 
 import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -62,6 +47,7 @@ public class ResolveExpressionHandler implements OperationStepHandler {
         .setReadOnly()
         .setRuntimeOnly()
         .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SYSTEM_PROPERTY)
+        .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM) // use the JVM constraint as a guard against unauthorized reads of env vars
         .build();
 
 
@@ -70,6 +56,10 @@ public class ResolveExpressionHandler implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        // Resolving can involve reading a system property or env vars, so ensure the caller
+        // is authorized to do that.
+        context.authorize(operation, EnumSet.of(Action.ActionEffect.ADDRESS, Action.ActionEffect.READ_RUNTIME)).failIfDenied(operation);
 
         // Run at Stage.RUNTIME so we get the current values of system properties set by earlier steps in a composite
         context.addStep(new OperationStepHandler() {

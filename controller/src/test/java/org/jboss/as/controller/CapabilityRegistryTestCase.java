@@ -1,19 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2015, Red Hat, Inc., and individual contributors as indicated
- * by the @authors tag.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.controller;
@@ -149,10 +136,10 @@ public class CapabilityRegistryTestCase extends AbstractControllerTestBase {
 
     private static final ResourceDefinition TEST_RESOURCE1 = ResourceBuilder.Factory.create(TEST_ADDRESS1.getElement(0),
             NonResolvingResourceDescriptionResolver.INSTANCE)
-            .setAddOperation(new AbstractAddStepHandler(ad, other))
-            .setRemoveOperation(new AbstractRemoveStepHandler() {})
-            .addReadWriteAttribute(ad, null, new ReloadRequiredWriteAttributeHandler(ad))
-            .addReadWriteAttribute(other, null, new ReloadRequiredWriteAttributeHandler(other))
+            .setAddOperation(new ModelOnlyAddStepHandler())
+            .setRemoveOperation(new ModelOnlyRemoveStepHandler())
+            .addReadWriteAttribute(ad, null, ReloadRequiredWriteAttributeHandler.INSTANCE)
+            .addReadWriteAttribute(other, null, ReloadRequiredWriteAttributeHandler.INSTANCE)
             .addOperation(SimpleOperationDefinitionBuilder.of("add-cap",
                             NonResolvingResourceDescriptionResolver.INSTANCE).build(),
                     (context, operation) -> {
@@ -166,19 +153,19 @@ public class CapabilityRegistryTestCase extends AbstractControllerTestBase {
 
     private static final ResourceDefinition SUB_RESOURCE = ResourceBuilder.Factory.create(TEST_ADDRESS3.getElement(0),
             NonResolvingResourceDescriptionResolver.INSTANCE)
-                .setAddOperation(new AbstractAddStepHandler())
+                .setAddOperation(new ModelOnlyAddStepHandler())
                 .setRemoveOperation(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .addReadWriteAttribute(ad, null, new ReloadRequiredWriteAttributeHandler(ad))
+                .addReadWriteAttribute(ad, null, ReloadRequiredWriteAttributeHandler.INSTANCE)
                 .addCapability(TEST_CAPABILITY3)
                 .build();
 
 
     private static final ResourceDefinition TEST_RESOURCE2 = ResourceBuilder.Factory.create(TEST_ADDRESS2.getElement(0),
             NonResolvingResourceDescriptionResolver.INSTANCE)
-            .setAddOperation(new AbstractAddStepHandler(ad, other))
+            .setAddOperation(new ModelOnlyAddStepHandler())
             .setRemoveOperation(ReloadRequiredRemoveStepHandler.INSTANCE)
-            .addReadWriteAttribute(ad, null, new ReloadRequiredWriteAttributeHandler(ad))
-            .addReadWriteAttribute(other, null, new ReloadRequiredWriteAttributeHandler(other))
+            .addReadWriteAttribute(ad, null, ReloadRequiredWriteAttributeHandler.INSTANCE)
+            .addReadWriteAttribute(other, null, ReloadRequiredWriteAttributeHandler.INSTANCE)
             .addCapability(TEST_CAPABILITY2)
             .addOperation(SimpleOperationDefinitionBuilder.of("add-sub-resource",
                             NonResolvingResourceDescriptionResolver.INSTANCE).build(),
@@ -197,22 +184,22 @@ public class CapabilityRegistryTestCase extends AbstractControllerTestBase {
 
     private static final ResourceDefinition TEST_RESOURCE4 = ResourceBuilder.Factory.create(TEST_ADDRESS4.getElement(0),
             NonResolvingResourceDescriptionResolver.INSTANCE)
-            .setAddOperation(new AbstractAddStepHandler(ad, other) {
-        @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if(operation.hasDefined("fail")) {
-                throw new OperationFailedException("Let's rollback");
-            }
-        }
+            .setAddOperation(new AbstractAddStepHandler() {
+                @Override
+                protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+                    if (operation.hasDefined("fail")) {
+                        throw new OperationFailedException("Let's rollback");
+                    }
+                }
 
-        @Override
-        protected boolean requiresRuntime(OperationContext context) {
-            return true;
-        }
+                @Override
+                protected boolean requiresRuntime(OperationContext context) {
+                    return true;
+                }
             })
             .setRemoveOperation(ReloadRequiredRemoveStepHandler.INSTANCE)
-            .addReadWriteAttribute(ad, null, new ReloadRequiredWriteAttributeHandler(ad))
-            .addReadWriteAttribute(other, null, new ReloadRequiredWriteAttributeHandler(other))
+            .addReadWriteAttribute(ad, null, ReloadRequiredWriteAttributeHandler.INSTANCE)
+            .addReadWriteAttribute(other, null, ReloadRequiredWriteAttributeHandler.INSTANCE)
             .addCapability(IO_POOL_RUNTIME_CAPABILITY)
             .addCapability(IO_WORKER_RUNTIME_CAPABILITY)
             .build();

@@ -1,24 +1,7 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.jboss.as.model.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -84,7 +67,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
     private volatile ManagementResourceRegistration rootRegistration;
     private volatile Throwable error;
     private volatile boolean bootSuccess;
-    private static final OperationFailedException unknownBootFailure = new OperationFailedException("Unknown failure while executing boot operations");
+    private static final String BOOT_ERROR_MESSAGE = "Failure while executing boot operations";
 
     /**
      * This is the constructor to use for 23.0.x core model tests.
@@ -314,7 +297,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
             }
 
             if (!bootSuccess) {
-                error = unknownBootFailure;
+                error = new BootOperationFailedException(BOOT_ERROR_MESSAGE, super.getBootErrors());
             }
             return bootSuccess;
         } catch (Exception e) {
@@ -364,10 +347,10 @@ public abstract class ModelTestModelControllerService extends AbstractController
 
     public void waitForSetup() throws Exception {
         latch.await();
-        // Don't throw exception if a reason for the boot failure is not provided
-        if (error != null && !error.equals(unknownBootFailure)) {
-            if (error instanceof Exception)
+        if (error != null) {
+            if (error instanceof Exception) {
                 throw (Exception) error;
+            }
             throw new RuntimeException(error);
         }
     }
@@ -468,7 +451,13 @@ public abstract class ModelTestModelControllerService extends AbstractController
         }
     }
 
-    //These are here to overload the constuctor used for the different legacy controllers
+    private static class BootOperationFailedException extends OperationFailedException {
+        public BootOperationFailedException(final String msg, final ModelNode description) {
+            super(msg, description);
+        }
+    }
+
+    //These are here to overload the constructor used for the different legacy controllers
 
 
     @SuppressWarnings("InstantiationOfUtilityClass")
