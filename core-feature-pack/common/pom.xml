@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.wildfly.core</groupId>
         <artifactId>wildfly-core-feature-pack-parent</artifactId>
-        <version>23.0.0.Beta1-SNAPSHOT</version>
+        <version>23.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-core-feature-pack-common</artifactId>
@@ -874,7 +874,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <id>unpack</id>
