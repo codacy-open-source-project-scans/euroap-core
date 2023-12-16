@@ -15,8 +15,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.jar.Manifest;
 
 import org.jboss.modules.Module;
@@ -33,6 +35,8 @@ public class ProductConfig implements Serializable {
     private final String name;
     private final String version;
     private final String consoleSlot;
+    private final Stability defaultStability;
+    private final Set<Stability> stabilities;
     private boolean isProduct;
 
     public static ProductConfig fromFilesystemSlot(ModuleLoader loader, String home, Map<?, ?> providedProperties) {
@@ -47,6 +51,9 @@ public class ProductConfig implements Serializable {
         String projectName = null;
         String productVersion = null;
         String consoleSlot = null;
+        Stability defaultStability = Stability.COMMUNITY;
+        Stability minStability = Stability.EXPERIMENTAL;
+        Stability maxStability = Stability.DEFAULT;
 
         InputStream manifestStream = null;
         try {
@@ -65,6 +72,14 @@ public class ProductConfig implements Serializable {
                     productVersion = manifest.getMainAttributes().getValue("JBoss-Product-Release-Version");
                     consoleSlot = manifest.getMainAttributes().getValue("JBoss-Product-Console-Slot");
                     projectName = manifest.getMainAttributes().getValue("JBoss-Project-Release-Name");
+                    String defaultStabilityValue = manifest.getMainAttributes().getValue("JBoss-Product-Stability");
+                    if (defaultStabilityValue != null) {
+                        defaultStability = Stability.fromString(defaultStabilityValue);
+                    }
+                    String minStabilityValue = manifest.getMainAttributes().getValue("JBoss-Product-Minimum-Stability");
+                    if (minStabilityValue != null) {
+                        minStability = Stability.fromString(minStabilityValue);
+                    }
                 }
             }
 
@@ -78,6 +93,8 @@ public class ProductConfig implements Serializable {
         name = isProduct ? productName : projectName;
         version = productVersion;
         this.consoleSlot = consoleSlot;
+        this.defaultStability = defaultStability;
+        this.stabilities = EnumSet.range(maxStability, minStability);
     }
 
     private static String getProductConf(String home) {
@@ -114,6 +131,8 @@ public class ProductConfig implements Serializable {
         this.name = productName;
         this.version = productVersion;
         this.consoleSlot = consoleSlot;
+        this.defaultStability = Stability.DEFAULT;
+        this.stabilities = EnumSet.of(this.defaultStability);
     }
 
     public String getProductName() {
@@ -130,6 +149,22 @@ public class ProductConfig implements Serializable {
 
     public String getConsoleSlot() {
         return consoleSlot;
+    }
+
+    /**
+     * Returns the presumed stability level of this product.
+     * @return a stability level
+     */
+    public Stability getDefaultStability() {
+        return this.defaultStability;
+    }
+
+    /**
+     * Returns the set of permissible stability levels for this product.
+     * @return a set of stability levels
+     */
+    public Set<Stability> getStabilitySet() {
+        return this.stabilities;
     }
 
     public String getPrettyVersionString() {
